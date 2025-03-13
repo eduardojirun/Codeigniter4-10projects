@@ -21,20 +21,21 @@ class Books extends ResourcePresenter
         $limit = (int) ( $this->request->getGet('limit') ) ? $this->request->getGet('limit') : 20;
         $keywords = $this->request->getGet('search');
         $sort = $this->request->getGet('sort') ?? 'desc';
+        $order_by = $this->request->getGet('order_by') ?? 'book_id';
         $pager->setPath('books', 'default');
 
         if ( $keywords && !is_numeric($keywords) ) {
             $data = [
                 'total' => $this->model->search($keywords)->countAllResults(),
                 'limit' => $limit,
-                'books' => $this->model->search($keywords)->orderBy('book_id', $sort)->paginate($limit, 'default'),
+                'books' => $this->model->search($keywords)->orderBy($order_by, $sort)->paginate($limit, 'default'),
                 'pager'   => $this->model->pager,
             ]; // dd($data);
         } else {
             $data = [
                 'total' =>  $this->model->countAll(),
                 'limit' => $limit,
-                'books' => $this->model->where( 'created_at <=', date('Y-m-d') )->orderBy('book_id', $sort)->paginate($limit, 'default'),
+                'books' => $this->model->where( 'created_at <=', date('Y-m-d') )->orderBy($order_by, $sort)->paginate($limit, 'default'),
                 'pager' => $this->model->pager,
             ]; // dd($data);
         }
