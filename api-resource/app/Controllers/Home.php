@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 class Home extends BaseController
 {
-    public function index(): string
+    public function _index(): string
     {
         // Ejecución de migraciones desde controlador
         $migrate = \Config\Services::migrations();
@@ -38,5 +38,43 @@ class Home extends BaseController
             $seeder->call('Authors');
             $seeder->call('BooksAuthors');
         }
+    }
+
+    public function jqueryClient()
+    {
+        return view('books/index');
+    }
+
+    public function curlClient()
+    {
+        $options = [
+            'baseURI' => 'http://localhost/ci4/Codeigniter4-10projects/api-resource/api/',
+            'timeout' => 3,
+        ];
+        $client = service('curlrequest', $options); // Since v4.5.0, this code is recommended due to performance improvements
+        $response = $client->request('GET', 'books');
+
+        if ($this->request->isAJAX()) {
+            // echo $response->getStatusCode();
+            echo $response->getBody();
+            // echo $response->header('Content-Type');
+            /* if (str_contains($response->header('content-type'), 'application/json')) {
+                $body = json_decode($response->getBody());
+                echo $body;
+            }  */  
+            // $language = $response->negotiateLanguage(['en', 'fr']);
+            // return view('books/index');
+            
+
+        } else {
+            $arrayBooks = json_decode($response->getBody(), true);
+            // dd($arrayBooks);
+            return view('books_array/index', $arrayBooks);
+        }        
+    }
+
+    public function booksAjax()
+    {
+        return view('books_ajax/index');
     }
 }

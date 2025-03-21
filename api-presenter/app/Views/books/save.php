@@ -12,10 +12,11 @@
         <?php } ?>
 
         <form action="<?= base_url('books') ?><?= isset( $book['book_id'] ) ? '/update/'.$book['book_id'] : '' ?>" class="row g-3" method="post" autocomplete="off">
-
+            <?= csrf_field() ?>
             <?php if ( isset($book) ): ?>
                 <!-- <input type="hidden" name="_method" value="PUT"> -->
-                <input type="hidden" name="quiz_id" value="">
+                <input type="hidden" name="book_id" value="<?= $book['book_id'] ?>">
+                
             <?php endif ?>   
 
             <div class="col-md-4 offset-md-4">

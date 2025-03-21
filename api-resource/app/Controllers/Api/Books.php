@@ -4,7 +4,8 @@ namespace App\Controllers\Api;
 
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
-// use App\Models\BooksModel;
+use App\Models\Authors;
+use App\Models\BooksAuthors;
 
 class Books extends ResourceController
 {
@@ -51,12 +52,18 @@ class Books extends ResourceController
                     $authors = [];
                     foreach ( $book as $value ) {
                         // d($value);
-                        $authors[] = [ 'author_name' => $value['author_name'], 'author_bio' => $value['author_bio'] ];
+                        $authors[] = [
+                            'author_id'   => $value['author_id'], 
+                            'author_name' => $value['author_name'], 
+                            'author_bio'  => $value['author_bio'] 
+                        ];
                     } // d($authors);                
                         $books[$book_id] = [
                             'book_id'           => $book[0]['book_id'],
                             'book_name'         => $book[0]['book_name'],
                             'book_description'  => $book[0]['book_description'],
+                            'created_at'        => $book[0]['created_at'],
+                            'updated_at'        => $book[0]['updated_at'],
                             'authors'           => $authors
                         ];                
                 } // dd($books);
@@ -111,34 +118,112 @@ class Books extends ResourceController
      */
     public function create()
     {
-        $rules = [
-            'book_name'            => 'required|min_length[2]|max_length[50]',
-            'book_description'     => 'required|min_length[10]|max_length[100]',
-        ];
-        if ( !$this->validate($rules) ) {
-            // Display Errors
-            // return $this->failValidationErrors($this->validator->getErrors(), 422); // 422 or 400 
-            return $this->fail($this->validator->getErrors(), 422);
-        }
+        $validation = service('validation');
+        $AuthorsModel = new Authors();
+        $BooksAuthorsModel = new BooksAuthors();
 
-        $data = $this->request->getPost(); // var_dump($this->request->getRawInput()); die();
-        // Add Book to Table
-        $insert = $this->model->insert([
-            "book_name"         => $data['book_name'],
-            "book_description"  => $data['book_description']
+        $validation->setRules([
+            'book_name' => [
+                'label' => 'Título libro', 
+                'rules' => 'required|min_length[2]|max_length[50]', 
+                'errors' => [
+                    'min_length' => 'Supplied value ({value}) for {field} must have at least {param} characters.',
+                ],
+            ],
+            'book_description' => [
+                'label' => 'Descripción libro', 
+                'rules' => 'required|min_length[8]|max_length[500]', 
+                'errors' => [
+                    'min_length' => 'Supplied value ({value}) for {field} must have at least {param} characters.',
+                ],
+            ],
+
+            'authors.*.author_name' => [
+                'label' => 'Nombre autor', 
+                'rules' => 'required|min_length[2]|max_length[50]', 
+                'errors' => [
+                    'required'  => 'Al menos un author es requerido',
+                    'min_length' => 'Supplied value ({value}) for {field} must have at least {param} characters.',
+                ],
+            ],
+            'authors.*.author_bio' => [
+                'label' => 'Biografia author', 
+                'rules' => 'required|min_length[8]|max_length[500]', 
+                'errors' => [
+                    'required'  => 'Al menos una biografia de author es requerido',
+                    'min_length' => 'Supplied value ({value}) for {field} must have at least {param} characters.',
+                ],
+            ]
         ]);
-        if( $insert ) {
-            // Success Block
-            $data = [
-                'message' => 'Creado satisfactoriamente',
-                'id'        => $insert
-            ];
-            return $this->respondCreated($data);
+
+        $data = $this->request->getPost();
+        if ( !$validation->run($data) ) {
+            // Display Errors
+            // return $this->failValidationErrors($validation->getErrors(), 422); // 422 or 400 
+            return $this->fail($validation->getErrors(), 422);
+        }
+        // Add Book to Table
+        $insert_book = $this->model->insert([
+            "book_name"         => esc($data['book_name']), // &lt;script&gt;alert(&#039;hi&#039;)&lt;/script&gt;
+            "book_description"  => strip_tags($data['book_description']) // y el que no es jefe
+            // "book_description"  => htmlspecialchars($data['book_description']) // &lt;button&gt;y el que no es jefe&lt;/button&gt;
+        ]);
+        // Sustituir pos transaction
+        if( $insert_book ) {
+            $authors =  $this->request->getPost('authors'); // var_dump($authors);
+            // almacenar ids para eliminacion en caso de fallo
+            $inserts_ids_a = [];   
+            $inserts_ids_ba = [];
+            foreach ( $authors as $author ) {
+                $insert_author = $AuthorsModel->insert([
+                    "author_name"           => esc($author['author_name']),
+                    "author_bio"            => strip_tags($author['author_bio']) 
+                ]);
+                $inserts_ids_a[] = $insert_author;
+                if ( $insert_author ) {
+                    $insert_book_author = $BooksAuthorsModel->insert([
+                        "book_id"              => esc($insert_book),
+                        "author_id"            => esc($insert_author) 
+                    ]);
+                    if ( $insert_book_author) {
+                        $inserts_ids_ba[] = $insert_book_author;
+                    } else {
+                        // Eliminar registros de authors y books para integridad la db
+                        // Registros se eliminan en cascada de Authors y BooksAuthors
+                        $del_book = $this->model->delete($insert_book);
+                        $del_author = $AuthorsModel->delete($insert_author);
+                        return $this->respond([
+                            "status" => false,
+                            "message" => "No se pudieron guardar los datos BookAuthor"
+                        ]);
+                    }
+                } else {
+                    // Failed Block
+                    // Eliminar registros de books para integridad de db
+                    // Registros se eliminan en cascada de Authors y BooksAuthors
+                    $del_book = $this->model->delete($insert_book);
+                    return $this->respond([
+                        "status" => false,
+                        "message" => "No se pudieron guardar datos Author"
+                    ]);
+                }
+            } // END foreach 
+            if ($inserts_ids_ba) {
+                // Success Block
+                $data = [
+                    'message'   => 'Creado satisfactoriamente',
+                    'idb'       => $insert_book,
+                    'idsa'      => $inserts_ids_a,
+                    'idsba'     => $inserts_ids_ba
+                ];
+                $inserts_ids_ba = $insert_book_author;
+                return $this->respondCreated($data);
+            }
         } else {
             // Failed Block
             return $this->respond([
                 "status" => false,
-                "message" => "No se pudieron eliminar los datos"
+                "message" => "No se pudieron guardar los datos Book"
             ]);
         }        
     }
@@ -166,17 +251,39 @@ class Books extends ResourceController
     {
         $book = $this->model->find( $book_id );
         if( !empty($book) ) {
-            $rules = [
-                'book_name'            => 'required|min_length[5]|max_length[20]',
-                'book_description'     => 'required',
-            ];
-            if ( !$this->validate($rules) ) {
+            $validation = service('validation');
+            $validation->setRules([
+                'book_name' => [
+                    'label' => 'Título libro', 
+                    'rules' => 'required|min_length[2]|max_length[50]', 
+                    'errors' => [
+                        'min_length' => 'Supplied value ({value}) for {field} must have at least {param} characters.',
+                    ],
+                ],
+                'book_description' => [
+                    'label' => 'Descripción libro', 
+                    'rules' => 'required|min_length[8]|max_length[500]', 
+                    'errors' => [
+                        'min_length' => 'Supplied value ({value}) for {field} must have at least {param} characters.',
+                    ],
+                ]
+            ]);
+
+            // $data = $this->request->getPost(); // No work to put
+            $data = $this->request->getRawInput(); // var_dump( $data );die('die');
+            if ( !$validation->run($data) ) {
                 // Display Errors
-                return $this->fail($this->validator->getErrors(), 422);
-            } else {
-                $input = $this->request->getRawInput(); // var_dump( $input );die('die');
-                $update = $this->model->update($book_id, $input);
-                if ( $update ) {
+                // return $this->failValidationErrors($validation->getErrors(), 422); // 422 or 400 
+                return $this->fail($validation->getErrors(), 422);
+                
+            } else {                
+                // Add Book to Table
+                $update_book = $this->model->update( $book_id, [
+                    'book_name'            => esc($data['book_name']),
+                    'book_description'     => esc($data['book_description'])
+                ]);
+
+                if ( $update_book ) {
                     return $this->respond($book, 200);
                 } else {
                     return $this->respond(

@@ -35,7 +35,7 @@ class Books extends ResourcePresenter
             $data = [
                 'total' =>  $this->model->countAll(),
                 'limit' => $limit,
-                'books' => $this->model->where( 'created_at <=', date('Y-m-d') )->orderBy($order_by, $sort)->paginate($limit, 'default'),
+                'books' => $this->model->where( 'created_at <=', date('Y-m-d H:i:s') )->orderBy($order_by, $sort)->paginate($limit, 'default'),
                 'pager' => $this->model->pager,
             ]; // dd($data);
         }

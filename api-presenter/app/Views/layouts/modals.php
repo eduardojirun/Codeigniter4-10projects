@@ -99,6 +99,7 @@
             <div class="modal-footer">
                 <form id="form-delete" action="" method="post">
                     <!-- <input type="hidden" name="_method" value="DELETE"> -->
+                    <?= csrf_field() ?>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                     <button type="submit" class="btn btn-danger">Eliminar</button>
                 </form>

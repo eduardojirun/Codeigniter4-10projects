@@ -61,11 +61,20 @@ class Books extends Model
     public function booksAuthors()
     {
         $this->select(
-            'books.book_id, books.book_name, books.book_description, 
-            authors.author_name, authors.author_bio');
+            'books.book_id, books.book_name, books.book_description, books.created_at, books.updated_at, 
+            authors.author_id, authors.author_name, authors.author_bio');
         $this->join('books_authors', 'books_authors.book_id = books.book_id');
         $this->join('authors', 'authors.author_id = books_authors.author_id');
         return $this;
+    }
+
+    public function saveBookAuthor()
+    {
+        $this->db->transStart();
+        $this->db->query('AN SQL QUERY...');
+        $this->db->query('ANOTHER QUERY...');
+        $this->db->query('AND YET ANOTHER QUERY...');
+        $this->db->transComplete();
     }
 
 }
