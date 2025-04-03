@@ -13,6 +13,8 @@ class Books extends ResourceController
     protected $format = "json"; // xml
 
     public function __construct() {
+        date_default_timezone_set( "America/Mexico_City" );
+		setlocale( LC_ALL, "es_MX" );
     }
     
     /**
@@ -24,6 +26,7 @@ class Books extends ResourceController
     {
         $pager = service('pager');
         $pager->setPath('books', 'default');
+        $data = [];
         $limit = (int) ( $this->request->getGet('limit') ) ? $this->request->getGet('limit') : 20;
         $sort = $this->request->getGet('sort') ?? 'desc';
         $order_by = $this->request->getGet('order_by') ?? 'book_id'; 
@@ -35,11 +38,14 @@ class Books extends ResourceController
             $data = [
                 'total' => $this->model->search($keywords)->countAllResults(),
                 'limit' => $limit,
-                'books' => $this->model->search($keywords)->orderBy($order_by, $sort)->paginate($limit, 'default'),
+                'books' => $this->model->search($keywords)->where(['book_status' => 1])->orderBy($order_by, $sort)->paginate($limit, 'default'),
                 'pager'   => $pager->only(['search', 'sort', 'limit', 'order_by', 'start'])->links('default'),
             ]; // dd($data);
         } else {            
-            $booksAuthors = $this->model->booksAuthors()->orderBy($order_by, $sort)->paginate($limit, 'default'); // dd( $booksAuthors );
+            $booksAuthors = $this->model->booksAuthors()
+            // ->where(['book_status' => 1])
+            ->orderBy($order_by, $sort)
+            ->paginate($limit, 'default'); // dd( $booksAuthors );
             
             // Agrupando por book_id con helper array de CI
             helper('array');
@@ -61,6 +67,7 @@ class Books extends ResourceController
                         $books[$book_id] = [
                             'book_id'           => $book[0]['book_id'],
                             'book_name'         => $book[0]['book_name'],
+                            'book_status'         => $book[0]['book_status'],
                             'book_description'  => $book[0]['book_description'],
                             'created_at'        => $book[0]['created_at'],
                             'updated_at'        => $book[0]['updated_at'],
@@ -139,7 +146,7 @@ class Books extends ResourceController
             ],
 
             'authors.*.author_name' => [
-                'label' => 'Nombre autor', 
+                'label' => 'Nombre author', 
                 'rules' => 'required|min_length[2]|max_length[50]', 
                 'errors' => [
                     'required'  => 'Al menos un author es requerido',
@@ -155,6 +162,21 @@ class Books extends ResourceController
                 ],
             ]
         ]);
+
+        if ( !$this->request->getPost('authors[]') ) {
+            dd('hi');
+        }
+
+       /*  foreach($this->request->getPost('authors') as $key => $author){
+            $rules[ 'author.' . $key ] = 'required|alpha|max_length[2]';
+        }
+          $validation->setRules($rules);
+
+        if ( !$this->input->post('authors.*') ) {
+            $rules[ 'category.' . $key ] = 'required|alpha|max_length[2]';
+            $this->form_validation->set_rules('areas', 'Area(s)', 'trim|required');
+            $this->response['exception']['messages']['areas'] = 'Mínimo una area es requerida';
+        } */
 
         $data = $this->request->getPost();
         if ( !$validation->run($data) ) {
@@ -250,57 +272,91 @@ class Books extends ResourceController
     public function update( $book_id = null )
     {
         $book = $this->model->find( $book_id );
-        if( !empty($book) ) {
+        if( !empty($book) ) {        
             $validation = service('validation');
-            $validation->setRules([
-                'book_name' => [
-                    'label' => 'Título libro', 
-                    'rules' => 'required|min_length[2]|max_length[50]', 
-                    'errors' => [
-                        'min_length' => 'Supplied value ({value}) for {field} must have at least {param} characters.',
-                    ],
-                ],
-                'book_description' => [
-                    'label' => 'Descripción libro', 
-                    'rules' => 'required|min_length[8]|max_length[500]', 
-                    'errors' => [
-                        'min_length' => 'Supplied value ({value}) for {field} must have at least {param} characters.',
-                    ],
-                ]
-            ]);
-
-            // $data = $this->request->getPost(); // No work to put
-            $data = $this->request->getRawInput(); // var_dump( $data );die('die');
-            if ( !$validation->run($data) ) {
-                // Display Errors
-                // return $this->failValidationErrors($validation->getErrors(), 422); // 422 or 400 
-                return $this->fail($validation->getErrors(), 422);
-                
-            } else {                
-                // Add Book to Table
-                $update_book = $this->model->update( $book_id, [
-                    'book_name'            => esc($data['book_name']),
-                    'book_description'     => esc($data['book_description'])
-                ]);
-
-                if ( $update_book ) {
-                    return $this->respond($book, 200);
-                } else {
-                    return $this->respond(
-                        [
-                            'message' => 'Book updated failed',
-                            'status' => false
+            if ( $this->request->is('patch') ) {
+                $validation->setRules([
+                    'book_status' => [
+                        'label' => 'Estatus libro', 
+                        'rules' => 'required|exact_length[1]', 
+                        'errors' => [
+                            'exact_length' => 'Supplied value ({value}) for {field} must have at least {param} characters.',
                         ],
-                        ResponseInterface::HTTP_NOT_FOUND
-                    );
-                }    
+                    ],
+                ]);
+                // $data = $this->request->getPost(); // No work to put
+                $data = $this->request->getRawInput(); // var_dump( $data );die('die');
+                if ( !$validation->run($data) ) {
+                    // Display Errors
+                    // return $this->failValidationErrors($validation->getErrors(), 422); // 422 or 400 
+                    return $this->fail($validation->getErrors(), 422);                
+                } else {                
+                    // Add Book to Table
+                    $update_book = $this->model->update( $book_id, [
+                        'book_status'            => esc($data['book_status']),
+                    ]);
+                    if ( $update_book ) {
+                        return $this->respond($book, 200);
+                    } else {
+                        return $this->respond(
+                            [
+                                'message' => 'Book updated failed',
+                                'status' => false
+                            ],
+                            ResponseInterface::HTTP_NOT_FOUND
+                        );
+                    }    
+                }
+            } else {
+                $validation->setRules([
+                    'book_name' => [
+                        'label' => 'Título libro', 
+                        'rules' => 'required|min_length[2]|max_length[50]', 
+                        'errors' => [
+                            'min_length' => 'Supplied value ({value}) for {field} must have at least {param} characters.',
+                        ],
+                    ],
+                    'book_description' => [
+                        'label' => 'Descripción libro', 
+                        'rules' => 'required|min_length[8]|max_length[500]', 
+                        'errors' => [
+                            'min_length' => 'Supplied value ({value}) for {field} must have at least {param} characters.',
+                        ],
+                    ]
+                ]);
+                // $data = $this->request->getPost(); // No work to put
+                $data = $this->request->getRawInput(); // var_dump( $data );die('die');
+                if ( !$validation->run($data) ) {
+                    // Display Errors
+                    // return $this->failValidationErrors($validation->getErrors(), 422); // 422 or 400 
+                    return $this->fail($validation->getErrors(), 422);
+                    
+                } else {                
+                    // Add Book to Table
+                    $update_book = $this->model->update( $book_id, [
+                        'book_name'            => esc($data['book_name']),
+                        'book_description'     => esc($data['book_description'])
+                    ]);
+
+                    if ( $update_book ) {
+                        return $this->respond($book, 200);
+                    } else {
+                        return $this->respond(
+                            [
+                                'message' => 'Book updated failed',
+                                'status' => false
+                            ],
+                            ResponseInterface::HTTP_NOT_FOUND
+                        );
+                    }    
+                }
             }
         } else {
             return $this->respond([
                 "status" => false,
                 "message" => "book doesn't exists with this ID"
             ]);
-        } 
+        }         
     }
 
     /**
@@ -327,6 +383,20 @@ class Books extends ResourceController
             // Resource Not Found, 404
             $description = "No existe el identificador";
             return $this->failNotFound($description);
+        }
+    }
+
+    public function uploadCover()
+    {
+        $imageFile = $this->request->getFile("cover_image");
+        $coverImageURL = "";
+
+        if( $imageFile ){ // abc.png
+            // File is available
+            $newProductImageName = $imageFile->getRandomName();
+
+            $imageFile->move(FCPATH . "uploads", $newProductImageName);
+            $coverImageURL = "uploads/" . $newProductImageName;
         }
     }
 }

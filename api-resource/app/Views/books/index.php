@@ -178,6 +178,39 @@
                     alert('Error al eliminar el libro');
                 }
             });
+
+            $.ajax({
+                url: `${apiUrl}/${bookId}`,
+                method: 'DELETE'
+            })
+            .done(function( response ) {
+                console.log("success");
+                console.log(response);
+                if ( response.status === 'success' ) {
+                    csrf['csrf_hdi'] = response.hash;
+                    Swal.fire({
+                      position: 'center',
+                      type: 'success',
+                      title: 'El registro ha sido eliminado',
+                      showConfirmButton: false,
+                      timer: 1000,
+                    });
+                    keywords = $('#keywords-actions').val();
+                    if ( keywords != '' ) {
+                        load_table_search( params );
+                    } else {                        
+                        console.log(params);
+                        load_table(params);
+                    }
+                                     
+                }                
+            })
+            .fail(function() {
+                console.log("error");
+            })
+            .always(function() {
+                console.log("complete");
+            });
         }
     });
 

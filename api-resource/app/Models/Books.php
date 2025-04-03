@@ -12,7 +12,7 @@ class Books extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['book_name', 'book_description'];
+    protected $allowedFields    = ['book_name', 'book_description', 'book_status'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
@@ -61,7 +61,7 @@ class Books extends Model
     public function booksAuthors()
     {
         $this->select(
-            'books.book_id, books.book_name, books.book_description, books.created_at, books.updated_at, 
+            'books.book_id, books.book_name,  books.book_status, books.book_description, books.created_at, books.updated_at, 
             authors.author_id, authors.author_name, authors.author_bio');
         $this->join('books_authors', 'books_authors.book_id = books.book_id');
         $this->join('authors', 'authors.author_id = books_authors.author_id');

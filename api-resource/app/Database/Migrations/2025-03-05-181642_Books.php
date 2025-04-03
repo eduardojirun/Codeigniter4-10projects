@@ -21,6 +21,9 @@ class Books extends Migration
             'book_description' => [
                 'type' => 'TEXT',
                 'null' => true
+            ],'book_status' => [
+                'type' => 'boolean',
+                'null' => true
             ],
             'created_at' => [
                 'type' => 'DATETIME',
