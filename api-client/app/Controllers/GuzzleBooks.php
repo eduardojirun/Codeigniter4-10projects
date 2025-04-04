@@ -18,6 +18,11 @@ class GuzzleBooks extends BaseController
         ]);
     }
 
+    /**
+     * Get data resource in JSON format.
+     *
+     * @return ResponseInterface
+     */
     public function index()
     {
         $response = $this->client->request('GET', 'books');
@@ -26,7 +31,28 @@ class GuzzleBooks extends BaseController
         d($response->getBody());
         d($response);
     }
-
+     
+    /**
+     * Get a resource with id.
+     *
+     * @param int|string $id
+     *
+     * @return ResponseInterface
+     */
+    public function show( int|string $book_id )
+    {
+        $response = $this->client->request('GET', 'books/'.$book_id);                
+        d($response->getStatusCode());       
+        d($response->getHeader('content-type')[0]);
+        d($response->getBody());
+        d($response);
+    }
+    
+    /**
+     * Create a new resource, from "form_params".
+     *
+     * @return ResponseInterface
+     */
     public function createBooks()
     {
         $response = $this->client->post('books', [
@@ -48,7 +74,14 @@ class GuzzleBooks extends BaseController
         d($response);
     }
 
-    public function updateBooks( int $book_id )
+    /**
+     * Update a resource, from "form_params".
+     *
+     * @param int|string $id
+     *
+     * @return ResponseInterface
+     */
+    public function updateBooks( int|string $book_id )
     {
         $response = $this->client->request('PUT', 'books/'.$book_id, [
             'form_params' => [
@@ -69,7 +102,14 @@ class GuzzleBooks extends BaseController
         dd($response);
     }
 
-    public function deleteBook( int $book_id )
+    /**
+     * Delete the designated resource.
+     *
+     * @param int|string $id
+     *
+     * @return ResponseInterface
+     */
+    public function deleteBook( int|string $book_id )
     {
         if ( $book_id > 0 ) {
             $response = $this->client->request('DELETE', 'books/'.$book_id);
@@ -81,11 +121,18 @@ class GuzzleBooks extends BaseController
         }        
     }
 
-    public function patchBook( int $book_id  )
+    /**
+     * Partially updates a resource, with a formatted JSON in "form_params".
+     *
+     * @param int|string $id
+     *
+     * @return ResponseInterface
+     */
+    public function patchBook( int|string $book_id  )
     {
         $response = $this->client->request('PATCH',  'books/'.$book_id, [
-            'json' => [
-               'book_name' => 'el libro chinguetas 2 edit con patch',
+            'form_params' => [
+               'book_status' => '0',
             ]
         ]);        
         $body = $response->getBody();
@@ -93,5 +140,4 @@ class GuzzleBooks extends BaseController
         d($arr_body);
         dd($response);
     }
-
 }
