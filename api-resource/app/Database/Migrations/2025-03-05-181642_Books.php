@@ -22,8 +22,9 @@ class Books extends Migration
                 'type' => 'TEXT',
                 'null' => true
             ],'book_status' => [
-                'type' => 'boolean',
-                'null' => true
+                'type' => 'BOOLEAN',
+                'constraint' => 1,
+                'default' => 1
             ],
             'created_at' => [
                 'type' => 'DATETIME',
