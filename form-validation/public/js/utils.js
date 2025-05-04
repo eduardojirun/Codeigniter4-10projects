@@ -23,7 +23,9 @@ export default function validation_ajax( form, route ) {
         data: form_data,  
         contentType: false,  
         cache: false,  
-        processData: false
+        processData: false,
+        // Este se establece por default y es necesario para que Codeigniter identifique que es petición AJAX
+        // headers: {'X-Requested-With': 'XMLHttpRequest'}
     })
     .done(function(response, textStatus, jqXHR ) {
         console.log( 'success' );

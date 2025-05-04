@@ -25,7 +25,7 @@ class BasicAuthFilter implements FilterInterface
      * @return RequestInterface|ResponseInterface|string|void
      */
     public function before(RequestInterface $request, $arguments = null)
-    {
+    { // print_r($_SERVER);
         $Authorization = $request->getServer("HTTP_AUTHORIZATION");
 
         // Check Auth Header
@@ -50,10 +50,10 @@ class BasicAuthFilter implements FilterInterface
         //Verify Username and password
         list($username, $password) = explode(":", base64_decode($AuthorizationStringParts[1]));
 
-        // Username: CI4_APIS_ADMIN
-        // Password: admin#123
+        // Username: API-RESOURCE-BASIC-AUTH
+        // Password: your-#1w4t7&password
 
-        if($username !== "CI4_APIS_ADMIN" || $password !== "admin#123"){
+        if($username !== "API-RESOURCE-BASIC-AUTH" || $password !== "your-#1w4t7&password"){
             return Services::response()->setStatusCode(400)->setJSON([
                 "status" => false,
                 "message" => "UnAuthorized Access"

@@ -11,7 +11,7 @@ class ProductController extends ResourceController
     protected $format = "json";
 
     // [POST] - title, cost, description, product_image
-    public function addProduct(){
+    public function addProduct() {
        
         $validationRules = [
             "title" => [
@@ -40,13 +40,11 @@ class ProductController extends ResourceController
 
         $productImageURL = "";
 
-        if($imageFile){ // abc.png
-
+        if($imageFile){
             // File is available
             $newProductImageName = $imageFile->getRandomName();
-
             $imageFile->move(FCPATH . "uploads", $newProductImageName);
-
+            // Para guardar el nombre en DB
             $productImageURL = "uploads/" . $newProductImageName;
         }
 
@@ -61,14 +59,12 @@ class ProductController extends ResourceController
             "cost" => $cost,
             "description" => $description,
             "product_image" => $productImageURL
-        ])){
-
+        ])) {
             return $this->respond([
                 "status" => true,
                 "message" => "Product added successfully"
             ]);
-        }else{
-
+        } else {
             return $this->respond([
                 "status" => false,
                 "message" => "Failed to add product"
@@ -110,12 +106,10 @@ class ProductController extends ResourceController
     }
 
     // [PUT] - Update Product Data - {product_id}
-    public function updateProduct($product_id){
-
+    public function updateProduct($product_id)
+    {
         $product = $this->model->find($product_id);
-
-        if($product){
-
+        if ( $product ) {
             // Product Exists
             //$updated_data = json_decode(file_get_contents("php://input"), true);
 
@@ -128,36 +122,33 @@ class ProductController extends ResourceController
             $product_description = isset($updated_data['description']) ? $updated_data['description'] : $product['description'];
 
             $productImageObject = $this->request->getFile("product_image");
-
             $productImageURL = $product['product_image'];
 
-            if($productImageObject){
-
+            if ( $productImageObject ) {
                 $newProductImageName = $productImageObject->getRandomName();
                 $productImageObject->move(FCPATH . "uploads", $newProductImageName);
-
                 $productImageURL = "uploads/" . $newProductImageName;
             }
 
-            if($this->model->update($product_id, [
-                "title" => $product_title,
-                "cost" => $product_cost,
-                "description" => $product_description,
-                "product_image" => $productImageURL
-            ])){
-
+            if ( $this->model->update( $product_id, [
+                    "title" => $product_title,
+                    "cost" => $product_cost,
+                    "description" => $product_description,
+                    "product_image" => $productImageURL
+                    ]
+                )
+                ) {
                 return $this->respond([
                     "status" => true,
                     "message" => "Product has been updated"
                 ]);
-            }else{
-
+            } else {
                 return $this->respond([
                     "status" => false,
                     "message" => "Failed to update product"
                 ]);
             }
-        }else{
+        } else {
             return $this->respond([
                 "status" => false,
                 "message" => "Product not found"

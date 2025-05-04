@@ -28,7 +28,7 @@ class CreateProductsTable extends Migration
                 "null" => true
             ],
             "product_image" => [
-                "type" => "text",
+                "type" => "TEXT",
                 "null" => true
             ],
             "created_at datetime default current_timestamp"
