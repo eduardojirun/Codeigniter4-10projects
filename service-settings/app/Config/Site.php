@@ -6,6 +6,16 @@ use CodeIgniter\Config\BaseConfig;
 
 class Site extends BaseConfig
 {
+    public string $nameSite = 'https://github/loremipsum/';
+    public string $home = 'Acelerar la transición del mundo hacia la energía sostenible';
+    public array $products = ['alimentos', 'cosméticos', 'vestimenta', 'electrodomesticos', 'cpu'];
+    public array $services = ['limpieza', 'seguridad', 'transporte', 'salud', 'educación', 'distribución', 'entretenimiento'];
+    public array $areas = ['sistemas', 'administración', 'recursos humanos','dirección', 'Producción', 'Finanzas', 'Marketing', 'Ventas'];
+    public string $about = 'Ofrecer a los clientes los precios más bajos que sea posible, obteniendo la mayor selección y disponibilidad de la forma más rápida y cómoda posible.';
+    public array $team = ['juan', 'alma', 'pedro', 'ana', 'luis', 'raquel', 'lola'];
+    public string $contact = 'loremipsum@gmail.com';
+
+
     /**
      * --------------------------------------------------------------------------
      * Base Site URL
@@ -16,7 +26,7 @@ class Site extends BaseConfig
      *
      * E.g., http://example.com/
      */
-    public string $nameSite = 'https://github/eduardojirun/';
+    public string $_nameSite = 'https://github/eduardojirun/';
 
     /**
      * --------------------------------------------------------------------------

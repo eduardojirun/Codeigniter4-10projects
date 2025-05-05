@@ -14,7 +14,7 @@ class Home extends BaseController
 
         setting('Track.url', base_url());
 
-        $nameSite = setting()->get('Site.nameSite');d($nameSite); // REQUEST_URI
+        $nameSite = setting()->get('Site.descriptionSite');d($nameSite); // REQUEST_URI
 
         // Using the service through the helper
         $name = setting()->get('App.uriProtocol');d($name); // REQUEST_URI
@@ -23,10 +23,23 @@ class Home extends BaseController
         setting()->set('App.uriProtocol', 'PATH_INFO');
         $rename = setting()->get('App.uriProtocol');dd($rename);
 
-        
-        
-
         return view('welcome_message');
+    }
+
+    public function site()
+    {
+        helper('setting');
+        $data = [
+            'nameSite'      => setting()->get('Site.nameSite'),
+            'home'          => setting()->get('Site.home'),
+            'products'      => setting()->get('Site.products'),
+            'services'      => setting()->get('Site.services'),
+            'areas'         => setting()->get('Site.areas'),
+            'about'         => setting()->get('Site.about'),
+            'team'          => setting()->get('Site.team'),
+            'contact'       => setting()->get('Site.contact'),
+        ];
+        return view('site', $data);
     }
 
     private function doc()
