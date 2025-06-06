@@ -12,7 +12,7 @@ class Users extends ResourcePresenter
         // sup3r4dm1n
         // superadmin
         $user = auth()->user(); // d($user);
-        if ( $user->inGroup('superadmin', 'admin')) {
+        if ( $user->inGroup('admin') ) {
             // dd('sadfasdf');
         }
     }

@@ -7,7 +7,14 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 
+
 service('auth')->routes($routes);
+
+// Superadmin
+$routes->group('superadmin', ['filter' => 'superadmin'], function($routes) {
+    // Otras rutas solo para administradores
+    $routes->presenter('dashboard',  ['controller' => 'Superadmin\Dashboard'] );
+});
 
 // Admin
 $routes->group('admin', ['filter' => 'admin'], function($routes) {
@@ -25,6 +32,12 @@ $routes->group('developer', ['filter' => 'developer'], function($routes) {
 $routes->group('user', ['filter' => 'user'], function($routes) {
     // Otras rutas solo para administradores
     $routes->presenter('dashboard',  ['controller' => 'Users\Dashboard'] );
+});
+
+// Beta
+$routes->group('beta', ['filter' => 'beta'], function($routes) {
+    // Otras rutas solo para administradores
+    $routes->presenter('dashboard',  ['controller' => 'Beta\Dashboard'] );
 });
 
 // Shield 

@@ -83,7 +83,7 @@ class ProductController extends ResourceController
             "products" => $products
         ]);
     }
-Ñ
+
     // [GET] - {product_id}
     public function getSingleProduct($product_id){
 

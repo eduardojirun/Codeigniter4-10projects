@@ -220,6 +220,12 @@
             <li class="menu-item hidden"><a
                     href="https://codeigniter.com/contribute" target="_blank">Contribute</a>
             </li>
+            <li class="menu-item hidden"><a
+                    href="<?= base_url('login') ?>">Login</a>
+            </li>
+            <li class="menu-item hidden"><a
+                    href="<?= base_url('register') ?>">Register</a>
+            </li>
         </ul>
     </div>
 
