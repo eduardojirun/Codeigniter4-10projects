@@ -1,68 +1,126 @@
-# CodeIgniter 4 Application Starter
+# Simple Books API #
 
-## What is CodeIgniter?
+Esta API te permite hacer una reservación de un libro.
+La API está disponible en `https://books.pulgapps.com`
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+## Endpoints ##
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+### Status ###
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+GET `/status`
+Devuelve el estatus de la API.
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+### Listado de libros ###
 
-## Installation & updates
+GET `/books`
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+Devuelve un listado de libros.
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+Parámetro de consulta opcionales:
 
-## Setup
+- type: fiction or non-fiction
+- limit: a number between 1 and 20.
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
 
-## Important Change with index.php
+### Detalles de un libro ###
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+GET `/books/:bookId`
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+Recupera la información detallada de un libro.
 
-**Please** read the user guide for a better explanation of how CI4 works!
 
-## Repository Management
+### Enviar una pedido ###
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+POST `/orders`
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+Permite enviar un nuevo pedido. Requeier autenticación basic.
 
-## Server Requirements
+The request body needs to be in JSON format and include the following properties:
 
-PHP version 8.1 or higher is required, with the following extensions installed:
+ - `bookId` - Integer - Required
+ - `customerName` - String - Required
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+Example
+```
+POST /orders/
+Authorization: Bearer <YOUR TOKEN>
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - If you are still using PHP 7.4 or 8.0, you should upgrade immediately.
-> - The end of life date for PHP 8.1 will be December 31, 2025.
+{
+  "bookId": 1,
+  "customerName": "John"
+}
+```
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+The response body will contain the order Id.
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+### Get all orders ###
+
+GET `/orders`
+
+Allows you to view all orders. Requires authentication.
+
+### Get an order ###
+
+GET `/orders/:orderId`
+
+Allows you to view an existing order. Requires authentication.
+
+### Update an order ###
+
+PATCH `/orders/:orderId`
+
+Update an existing order. Requires authentication.
+
+The request body needs to be in JSON format and allows you to update the following properties:
+
+ - `customerName` - String
+
+ Example
+```
+PATCH /orders/PF6MflPDcuhWobZcgmJy5
+Authorization: Bearer <YOUR TOKEN>
+
+{
+  "customerName": "John"
+}
+```
+
+### Delete an order ###
+
+DELETE `/orders/:orderId`
+
+Delete an existing order. Requires authentication.
+
+The request body needs to be empty.
+
+ Example
+```
+DELETE /orders/PF6MflPDcuhWobZcgmJy5
+Authorization: Bearer <YOUR TOKEN>
+```
+
+## API Authentication ##
+
+To submit or view an order, you need to register your API client.
+
+POST `/api-clients/`
+
+The request body needs to be in JSON format and include the following properties:
+
+ - `clientName` - String
+ - `clientEmail` - String
+
+ Example
+
+ ```
+ {
+    "clientName": "Postman",
+    "clientEmail": "valentin@example.com"
+}
+ ```
+
+The response body will contain the access token. The access token is valid for 7 days.
+
+**Possible errors**
+
+Status code 409 - "API client already registered." Try changing the values for `clientEmail` and `clientName` to something else.
