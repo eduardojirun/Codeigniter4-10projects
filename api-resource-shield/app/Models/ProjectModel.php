@@ -4,15 +4,20 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class BooksAuthors extends Model
+class ProjectModel extends Model
 {
-    protected $table            = 'books_authors';
-    protected $primaryKey       = 'id_book_author';
+    protected $table            = 'projects';
+    protected $primaryKey       = 'project_id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = [];
+    protected $allowedFields    = [
+        "user_id",
+        "project_name",
+        "project_budget",
+        "project_description"
+    ];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
