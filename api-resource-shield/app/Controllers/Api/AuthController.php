@@ -36,9 +36,9 @@ class AuthController extends ResourceController
      *      required=true,
      *      @OA\JsonContent(
      *         type="object",
-     *         @OA\Property(property="username", type="string", example="sanjay_kumar"),
-     *         @OA\Property(property="email", type="string", example="sanjay@gmailtest.com"),
-     *         @OA\Property(property="name", type="string", example="Sanjay Kumar"),
+     *         @OA\Property(property="username", type="string", example="lalo landa"),
+     *         @OA\Property(property="email", type="string", example="lalo@landa.com"),
+     *         @OA\Property(property="name", type="string", example="lalo landa"),
      *         @OA\Property(property="password", type="string", format="password", example="123456"),
      *         @OA\Property(property="gender", type="string", example="male"),
      *         @OA\Property(property="phone_no", type="string", example="1234567890")
@@ -114,7 +114,7 @@ class AuthController extends ResourceController
      *      required=true,
      *      @OA\JsonContent(
      *         type="object",
-     *         @OA\Property(property="email", type="string", example="sanjay@gmailtest.com"),
+     *         @OA\Property(property="email", type="string", example="lalo@landa.com"),
      *         @OA\Property(property="password", type="string", format="password", example="123456")
      *      )
      *    ),
